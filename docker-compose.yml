@@ -1,0 +1,48 @@
+version: "3.3"
+
+services:
+  massa:
+    image: rykcod/massa:${MASSA_VERSION}
+    container_name: massa
+    restart: unless-stopped
+    volumes:
+      - ${MASSA_DATA_FOLDER}:/massa_mount
+    env_file:
+      - .massa-env
+    ports:
+      - "31244:31244"
+      - "31245:31245"
+      - "33035:33035"
+  massa-node-agent:
+    image: fsidhoum/massa-node-agent:${MASSA_NODE_AGENT_VERSION}
+    container_name: massa-node-agent
+    restart: unless-stopped
+    environment:
+      - MNA_MASSA_NODE_URL=http://massa:33035
+    env_file:
+      - .massa-node-agent-env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - massa
+  massa-node-influxdb-adapter:
+    image: fsidhoum/massa-node-influxdb-adapter:${MASSA_NODE_INFLUX_ADAPTER_VERSION}
+    container_name: massa-node-influxdb-adapter
+    restart: unless-stopped
+    environment:
+      - MNIA_SOCKET_URL=ws://massa-node-agent:3000
+    env_file:
+      - .massa-node-influxdb-adapter-env
+    depends_on:
+      - massa-node-agent
+  influxdb:
+    container_name: influxdb
+    image: influxdb:${INFLUXDB_VERSION}
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    env_file:
+      - .influxdb-env
+    volumes:
+      - ${INFLUXDB_DATA_FOLDER}:/var/lib/influxdb2
+

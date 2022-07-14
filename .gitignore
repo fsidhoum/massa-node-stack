@@ -1,0 +1,6 @@
+.idea
+.env
+.massa-env
+.massa-node-agent-env
+.massa-node-influxdb-adapter-env
+.influxdb-env
